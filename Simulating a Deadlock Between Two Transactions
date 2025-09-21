@@ -1,0 +1,23 @@
+Session 1 (User A)
+
+BEGIN;
+-- Lock first row
+UPDATE StudentEnrollments SET course_id='CSE201' WHERE student_id=1;
+
+-- Wait a moment (don’t commit yet)
+-- Now try to lock second row (will block if Session 2 grabbed it first)
+UPDATE StudentEnrollments SET course_id='CSE202' WHERE student_id=2;
+
+Session 2 (User B)
+
+BEGIN;
+-- Lock second row
+UPDATE StudentEnrollments SET course_id='CSE301' WHERE student_id=2;
+
+-- Wait a moment
+-- Now try to lock first row (will deadlock)
+UPDATE StudentEnrollments SET course_id='CSE302' WHERE student_id=1;
+
+
+ERROR: deadlock detected
+DETAIL: Process 1234 waits for ShareLock…
