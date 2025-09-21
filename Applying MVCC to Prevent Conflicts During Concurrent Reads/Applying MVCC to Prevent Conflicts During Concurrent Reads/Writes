@@ -1,0 +1,52 @@
+1️⃣ Table & Sample Data (run once)
+
+
+CREATE TABLE StudentEnrollments (
+    student_id      INT PRIMARY KEY,
+    student_name    VARCHAR(100),
+    course_id       VARCHAR(10),
+    enrollment_date DATE
+);
+
+INSERT INTO StudentEnrollments VALUES
+(1,'Ashish','CSE101','2024-06-01');
+
+
+Session A – User A (Reader)
+
+
+-- Start a transaction in a snapshot/consistent-read isolation level
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;   -- PostgreSQL
+-- For MySQL InnoDB:  START TRANSACTION WITH CONSISTENT SNAPSHOT;
+
+-- First read: take a snapshot
+SELECT enrollment_date
+FROM StudentEnrollments
+WHERE student_id = 1;
+-- ➜ Returns: 2024-06-01
+-- Keep this transaction open.  Do NOT COMMIT yet.
+
+
+Session B – User B (Writer)
+
+
+BEGIN;
+
+UPDATE StudentEnrollments
+   SET enrollment_date = '2024-07-10'
+ WHERE student_id = 1;
+
+COMMIT;
+-- Update succeeds immediately—no waiting on the reader.
+
+
+Back to Session A
+
+-- Still inside the same transaction
+SELECT enrollment_date
+FROM StudentEnrollments
+WHERE student_id = 1;
+-- ➜ Still returns: 2024-06-01  (the snapshot value)
+
+COMMIT;
+
