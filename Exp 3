@@ -1,0 +1,39 @@
+Scenario 1 – Traditional Locking (Reader Blocks)
+
+Session A (Writer)
+
+BEGIN;
+-- Acquire an exclusive row lock
+SELECT * FROM StudentEnrollments
+WHERE student_id = 1
+FOR UPDATE;
+-- keep transaction open (do not commit yet)
+
+
+Session B (Reader with Lock)
+BEGIN;
+SELECT * FROM StudentEnrollments
+WHERE student_id = 1
+FOR UPDATE;
+
+
+3️⃣ Scenario 2 – MVCC Snapshot Read (No Blocking)
+
+
+Session A (Writer)
+
+BEGIN;
+UPDATE StudentEnrollments
+   SET enrollment_date = '2024-07-10'
+ WHERE student_id = 1;
+-- keep the transaction open, do not commit yet
+
+Session B (Plain Reader)
+
+
+BEGIN ISOLATION LEVEL REPEATABLE READ;   -- PostgreSQL
+-- or: START TRANSACTION WITH CONSISTENT SNAPSHOT;  (MySQL InnoDB)
+
+SELECT * FROM StudentEnrollments
+WHERE student_id = 1;
+
